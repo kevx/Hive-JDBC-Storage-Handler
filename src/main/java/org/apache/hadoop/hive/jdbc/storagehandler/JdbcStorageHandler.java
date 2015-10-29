@@ -16,12 +16,11 @@
  */
 package org.apache.hadoop.hive.jdbc.storagehandler;
 
-import java.util.Map;
-import java.util.Properties;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -32,7 +31,6 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
-import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -41,15 +39,10 @@ import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorization
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.lib.db.DBConfiguration;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
@@ -279,7 +272,32 @@ public class JdbcStorageHandler extends DefaultStorageHandler implements
         @Override
         public void commitDropTable(Table tbl, boolean deleteData)
                 throws MetaException {
-            // TODO Auto-generated method stub
+            //kevx@10/29/2015
+            Connection conn = null;
+            try {
+                final Map<String, String> tblParams = tbl.getParameters();
+                if (tblParams.containsKey("mapred.jdbc.truncate.on.drop")) {
+                    boolean truncate = Boolean.valueOf(tblParams.get("mapred.jdbc.truncate.on.drop"));
+                    if (deleteData && truncate) {
+                        conn = DriverManager.getConnection(
+                            tblParams.get("mapred.jdbc.url"), 
+                            tblParams.get("mapred.jdbc.username"), 
+                            tblParams.get("mapred.jdbc.password")
+                        );
+                        String sql = String.format("truncate %s", tblParams.get("mapred.jdbc.input.table.name"));
+                        LOG.error("commitDropTable_executing:" + sql);
+                        conn.createStatement().execute(sql);
+                        conn.close();
+                    }
+                }
+            } catch (SQLException e) {
+                LOG.error("commitDropTable", e);
+            } finally {
+                try {
+                    if (conn != null) conn.close();
+                } catch (SQLException e) {
+                }
+            }
         }
 
         @Override
