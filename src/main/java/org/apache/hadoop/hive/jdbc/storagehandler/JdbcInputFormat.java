@@ -60,6 +60,18 @@ public class JdbcInputFormat extends InputFormatWrapper {
             throws IOException {
         JdbcSerDeHelper.setFilters(job);
         job.setInt("mapred.map.tasks", numSplits);
+        try {
+            //why do i do this? In one hive session you may run the query without
+            //any exception for the first time, but the jdbc connection will by closed
+            //soon. So the second time you just get a 'MySQLNonTransientConnectionException'
+            //After explicitly calling closeConnection Hadoop will try to get a new connection
+            //and everything is ok now.
+            Method method = DBInputFormat.class.getDeclaredMethod("closeConnection");
+            method.setAccessible(true);
+            method.invoke(realInputFormat);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ((org.apache.hadoop.mapreduce.lib.db.DBInputFormat) realInputFormat)
                 .setConf(job);
         return super.getSplits(job, numSplits);

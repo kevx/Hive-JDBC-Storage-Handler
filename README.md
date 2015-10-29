@@ -1,15 +1,11 @@
 #Hive Storage Handler for JDBC#
 
-The **Hive Storage Handler For JDBC** by [Qubole](www.qubole.com), which is a fork of [HiveJdbcStorageHandler](https://github.com/myui/HiveJdbcStorageHandler), helps users read from and write to JDBC databases using Hive, and also enabling them to run SQL queries to analyze data that resides in JDBC tables.
-Optimizations such as [FilterPushDown](https://cwiki.apache.org/confluence/display/Hive/FilterPushdownDev) have also been added.
+Forked from Qubole.
+
+Fixed bugs and enhanced some features.
 
 
 ##Building from Source##
-* Download the code from Github:
-```
-  $ git clone https://github.com/qubole/Hive-JDBC-storage-Handler.git
-  $ cd Hive-JDBC-storage-Handler
-```
 
 * Build using Maven (add ```-DskipTests``` to build without running tests):
 

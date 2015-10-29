@@ -111,7 +111,8 @@ public class RecordReaderWrapper<K, V> implements RecordReader<K, V> {
         if (taskAttemptID == null) {
             taskAttemptID = new TaskAttemptID();
         }
-        LOG.info("Task attempt id is >> " + taskAttemptID.toString());
+        //holy shit!! NPE will be thrown here...
+        //LOG.info("Task attempt id is >> " + taskAttemptID.toString());
 
         // create a MapContext to pass reporter to record reader (for counters)
         TaskAttemptContext taskContext = ShimLoader.getHadoopShims()
