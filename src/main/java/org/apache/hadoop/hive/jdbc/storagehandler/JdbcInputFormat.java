@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.jdbc.storagehandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import org.apache.hadoop.hive.jdbc.storagehandler.exceptions.PredicateMissingException;
 import org.apache.hadoop.mapred.InputSplit;
